@@ -5,6 +5,7 @@ module.exports = {
   mode: "development",
   entry: {
 	    main:        './src/index.js',
+	    products:    './src/Products.jsx',
   },
   output: {
     path: path.resolve(__dirname, 'build/js'),
