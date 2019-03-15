@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
-import { Tab, Tabs, Form, FormGroup, FormControl, Control, ControlLabel, Checkbox, Button, ListGroup, ListGroupItem, InputGroup } from 'react-bootstrap'
+import ReactDOM from 'react-dom';
+import { Modal, Tab, Tabs, Form, FormGroup, FormControl, Control, ControlLabel, Checkbox, Button, ListGroup, ListGroupItem, InputGroup } from 'react-bootstrap'
 import ReactTable from "react-table";
 import 'react-table/react-table.css'
 import './Nuskin.css';
+import './index.css';
 import axios from "axios";
 import Products from "Products";
+import NewSKUs from "NewSKUs";
+import NuskinAlert from "NuskinAlert";
 
 class Nuskin extends Component {
    
@@ -19,7 +23,11 @@ class Nuskin extends Component {
       this.getTrProps = this.getTrProps.bind(this);
       this.subComponent = this.subComponent.bind(this);
       this.showResponse = this.showResponse.bind(this);
-
+      this.onHideDialog = this.onHideDialog.bind(this);
+      this.handleShow = this.handleShow.bind(this);
+      this.handleUploadError = this.handleUploadError.bind(this);
+      this.refresh = this.refresh.bind(this);
+      
       this.selectedFile = null;
       
       const cadFormat = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'CAD' })
@@ -28,31 +36,35 @@ class Nuskin extends Component {
         { expander: true},
         { Header: "Orders", 
            columns: [
-              { Header: 'Order Number',     accessor: 'orderNumber',  style: { textAlign: "center" }, Cell: props => ( <a href={"/orderitems?orderNumber=" + props.value}>{props.value}</a> )}, 
+              { Header: 'Order Number',     accessor: 'orderNumber',  style: { textAlign: "center" }, Cell: props => ( <a href={"/orderfiledownload?orderNumber=" + props.value}>{props.value}</a> )}, 
               { Header: 'Date',             accessor: 'date',         style: { textAlign: "right"  },    },
               { Header: 'Account',          accessor: 'account',      style: { textAlign: "center" },    },
-              { Header: 'Subtotal',         accessor: 'subtotal',     style: { textAlign: "right" }, Cell: props => cadFormat.format(props.value) },
-              { Header: 'Tax',              accessor: 'tax',          style: { textAlign: "right" }, Cell: props => cadFormat.format(props.value) },
-              { Header: 'Shipping',         accessor: 'shipping',     style: { textAlign: "right" }, Cell: props => cadFormat.format(props.value) },
+              { Header: 'Total',         
+                  id : 'total',
+                  accessor: d => d.subtotal + d.tax + d.shipping,     
+                  style: { textAlign: "right" }, 
+                  Cell: props => cadFormat.format(props.value) },
               { Header: 'Shipping Address', accessor: 'shippingAddress',  },
            ]
         }
       ];
 
       this.state =  { data: null,
-                      columns : this.orderColumns };
-     
+                      columns : this.orderColumns,
+                      newSKUs: null,
+                      show : false };
       
   }
       
      
   componentDidMount() {
-      const ev = 1;
-      
+      this.refresh();
+  }
+  
+  refresh() {
       fetch("/orders")
       .then( res => res.json())
       .then( (res) => {this.update(res) } );
-      
   }
 
    
@@ -64,10 +76,6 @@ class Nuskin extends Component {
   onFileLoaded(ev) {
       console.log("File loaded");
       
-      // Do something with ev.target.result 
-      // Post it to my application
-      
-      //axios.post("/orderfileupload", formData) // { file: ev.target.result} )
       axios.post("/orderfileupload", { file: ev.target.result} )
       .then(function (response) {
           console.log(response);
@@ -75,40 +83,58 @@ class Nuskin extends Component {
       .catch(function (error) {
           console.log(error);
         });
-      
   }
   
 
   
   showResponse(res) {
-      console.log(res.data);
+      var showDialog = res.data && res.data.length > 0;
+         
+      // If the were no problems, refresh the table
+      if (!showDialog) {
+          NuskinAlert.showAlert("Order file uploaded successfully");
+          this.refresh();
+      }
+      else {
+          this.setState( { newSKUs: res.data, show: true } );
+      }
+      
   }
   
+  onHideDialog(skusUpdated) {
+      
+      this.setState({show: false});
+      
+      if (skusUpdated) {
+          // Retry sending the order
+          this.onAddOrder(false);
+      }
+      
+  }
   
-  onAddOrder() {
+  handleShow() {
+      this.setState( { show:true});
+  }
+  
+  handleUploadError(err) {
+
+      NuskinAlert.showAlert(err.response.data.message);
+  }
+  
+  onAddOrder(askConfirmation) {
       
       // Options: upload file, copy from clipboard, paste into edit box
       if (this.selectedFile != null) {
-          if (window.confirm("Uploading order " + this.selectedFile.name)) {
+          if ( !askConfirmation || window.confirm("Uploading order " + this.selectedFile.name)) {
 
-              /*
-              var reader = new FileReader();
-              reader.onload = this.onFileLoaded;
-              
-              reader.readAsDataURL(this.selectedFile);
-              */
-    
               var formData = new FormData();
               formData.append('file', this.selectedFile);
               formData.append('name', 'thefilename');
               formData.append('description', 'anupload');
               
-              axios.post("/orderfileupload", formData) // { file: ev.target.result} )
-//              .then(res => res.json())
-              .then(res => {
-                      this.showResponse(res);
-                    }
-              );
+              axios.post("/orderfileupload", formData) 
+              .then(res => { this.showResponse(res);  })
+              .catch( err=> { this.handleUploadError(err); });
           }
           
       }
@@ -142,7 +168,7 @@ class Nuskin extends Component {
      if (rowInfo && rowInfo.row && rowInfo.row.orderNumber) { 
           return (
               <div style={{ padding: "20px" }}>
-                  <Products orderNumber={rowInfo.row.orderNumber} /> 
+                  <Products orderDetails={rowInfo.original} /> 
              </div>);
      }
      else {
@@ -154,12 +180,16 @@ class Nuskin extends Component {
   render() {
 
       const data = this.state.data ? this.state.data : undefined;
-   
-      return (
-          <div>
+    
+      var show = (this.state.newSKUs && this.state.newSKUs.length > 0);
+
+      return  (
+           <>      
+              <NewSKUs data={this.state.newSKUs} show={ this.state.show } onHide={this.onHideDialog} /> 
               <form style={{margin: '10px'}}>
-              <input type="file" onChange={this.onFileSelected} />
-              <Button onClick={this.onAddOrder}>Add Order</Button>
+              <div className="file btn btn-primary"><input type="file" onChange={this.onFileSelected} /></div>
+              <Button onClick={() => {this.onAddOrder(true);} }>Add Order</Button>
+           
               </form>         
               <ReactTable data={data} 
                           columns={this.orderColumns} 
@@ -168,8 +198,8 @@ class Nuskin extends Component {
                           getTrProps={this.getTrProps} 
                           SubComponent = { row =>  {  return this.subComponent(row); } }
                   />
-          </div>
-    );
+           </>
+          );
   }
 }
 
