@@ -44,7 +44,6 @@ class Nuskin extends Component {
                   accessor: d => d.subtotal + d.tax + d.shipping,     
                   style: { textAlign: "right" }, 
                   Cell: props => cadFormat.format(props.value) },
-              { Header: 'Shipping Address', accessor: 'shippingAddress',  },
            ]
         }
       ];

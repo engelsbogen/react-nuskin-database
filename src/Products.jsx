@@ -6,6 +6,7 @@ import { Tab, Tabs, Form, FormGroup, FormControl, Control, ControlLabel, Checkbo
 import ReactTable from "react-table";
 import 'react-table/react-table.css';
 import CurrencyInput from 'react-currency-input';
+
 class Products extends Component {
    
   constructor(props) {
@@ -21,8 +22,9 @@ class Products extends Component {
       
       const cadFormat = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'CAD' })
       
+      
       this.productColumns = [
-        { Header: "Order Number: " + props.orderNumber, 
+        { Header: "Order Number: " + props.orderDetails.orderNumber, 
           columns: [
              { Header: 'Item',             accessor: 'id',           style: { textAlign: "center" }  }, 
              { Header: 'SKU',              accessor: 'sku',          style: { textAlign: "center" }  }, 
@@ -85,7 +87,7 @@ class Products extends Component {
 
   
   refresh() {
-      fetch("/products?orderNumber=" + this.props.orderNumber)
+      fetch("/products?orderNumber=" + this.props.orderDetails.orderNumber)
       .then( res => res.json())
       .then( (res) => {this.update(res) } );
   }
@@ -94,6 +96,7 @@ class Products extends Component {
       
       for (var i=0;  i<res.length; i++ ) {
          res[i].modified=false;
+         res[i].error = false;
       }
       this.setState ({ data : res });
   }
@@ -115,26 +118,76 @@ class Products extends Component {
       
       var modifiedRows = new Array();
       
+      var anyError = false;
+      
       for (var i=0; i<data.length; i++) {
+      
           if (data[i].modified) {
-             var modifiedRow = { ...data[i] }; // take a copy 
-             delete modifiedRow.modified;  // so as not to confuse the server 
-             modifiedRows.push(modifiedRow);
+      
+             var rowError = false;
+      
+             var modifiedRow = { ...data[i] }; // take a copy
+      
+             if (modifiedRow.endUse == 'INSTOCK' || modifiedRow.endUse == "PERSONAL" || modifiedRow.endUse == "DEMO") {
+                // Clear out the other fields
+                modifiedRow.customerName = "";
+                modifiedRow.receiptNumber = "";
+                modifiedRow.sellingPrice = 0;
+             }  
+             else if (modifiedRow.endUse == "SOLD") {
+      
+                // Require customer name and receipt fields
+                if (modifiedRow.customerName == "") rowError = true;
+                if (modifiedRow.receiptNumber == "" ) rowError = true;
+                // Require selling price > 0
+                if (modifiedRow.sellingPrice == 0) rowError = true;
+      
+             }
+             else if (modifiedRow.endUse == "SAMPLE") {
+                  
+                  // Require customer name 
+                  if (modifiedRow.customerName == "") {
+                     rowError = true;
+                  }
+                  // Require selling price = 0
+                  modifiedRow.sellingPrice = 0;
+                  // Receipt given for samples? Assume not.
+                  modifiedRow.receiptNumber = "";
+             }
+              
+      
+             if (!rowError) {
+                 delete modifiedRow.modified;  // so as not to confuse the server 
+                 modifiedRows.push(modifiedRow);
+             }
+             else {
+                 data[i].error = true;
+                 anyError = true;
+             }
           }
       }
       
-      fetch('/updateitems', {
-          method: 'PUT',   // Updates use PUT request
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(modifiedRows),
-      })
-      // When that completes, refresh everything
-      .then( () => { this.refresh();} );
       
+      if (!anyError) {
       
+          fetch('/updateitems', {
+              method: 'PUT',   // Updates use PUT request
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(modifiedRows),
+          })
+          // When that completes, refresh everything
+          .then( () => { this.refresh();} );
+      
+       }
+       else {
+           
+           // Just re-render with red colouring
+           this.setState ({ data : data });
+
+       }
       
   }
 
@@ -188,8 +241,13 @@ class Products extends Component {
       
       
       if (rowInfo && rowInfo.row ) {
+          
+          if (rowInfo.original.error) {
+              bkcolor = " #f1948a";
+              retval = { style : { backgroundColor: bkcolor  } }
+          }
           // If anything has been changed we are yellow 
-          if (rowInfo.original.modified) {
+          else if (rowInfo.original.modified) {
               bkcolor = "#EDF7A3";
               retval = { style : { backgroundColor: bkcolor  } }
           }
@@ -211,6 +269,15 @@ class Products extends Component {
       return (
               <div>
               <form style={{margin: '10px'}}>
+                  <span> <b>Order Number:</b> {this.props.orderDetails.orderNumber}  </span>
+                  <br/>
+                  <span><b>Subtotal:</b> ${this.props.orderDetails.subtotal}  </span>
+                  <span><b>Tax:</b> ${this.props.orderDetails.tax}  </span>
+                  <span><b>Shipping:</b> ${this.props.orderDetails.shipping}  </span>
+                  <span><b>Total:</b> ${this.props.orderDetails.subtotal + this.props.orderDetails.tax + this.props.orderDetails.shipping}  </span>
+                  <br/>
+                  <span><b>Shipping Address:</b> {this.props.orderDetails.shippingAddress}  </span>
+                  <br/>
                   <Button onClick={this.onSaveChanges}>Save changes</Button>
                   <Button onClick={this.onDiscardChanges}>Discard changes</Button>
               </form>         
