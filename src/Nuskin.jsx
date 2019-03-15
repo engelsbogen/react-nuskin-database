@@ -36,14 +36,15 @@ class Nuskin extends Component {
         { expander: true},
         { Header: "Orders", 
            columns: [
-              { Header: 'Order Number',     accessor: 'orderNumber',  style: { textAlign: "center" }, Cell: props => ( <a href={"/orderfiledownload?orderNumber=" + props.value}>{props.value}</a> )}, 
-              { Header: 'Date',             accessor: 'date',         style: { textAlign: "right"  },    },
-              { Header: 'Account',          accessor: 'account',      style: { textAlign: "center" },    },
-              { Header: 'Total',         
+              { Header: 'Order Number',  width: 100,   accessor: 'orderNumber',  style: { textAlign: "center" }, Cell: props => ( <a href={"/orderfiledownload?orderNumber=" + props.value}>{props.value}</a> )}, 
+              { Header: 'Date',          width: 100,    accessor: 'date',         style: { textAlign: "right"  },    },
+              { Header: 'Account',       width: 100,   accessor: 'account',      style: { textAlign: "center" },    },
+              { Header: 'Total',         width: 100,
                   id : 'total',
                   accessor: d => d.subtotal + d.tax + d.shipping,     
                   style: { textAlign: "right" }, 
                   Cell: props => cadFormat.format(props.value) },
+              { Header: 'Item Summary', accessor: 'itemSummary',  },
            ]
         }
       ];
