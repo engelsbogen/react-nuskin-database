@@ -3,9 +3,11 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import Nuskin from 'Nuskin';
 import * as serviceWorker from './serviceWorker';
+import NuskinNavBar from 'NuskinNavBar';
 
+ReactDOM.render( <NuskinNavBar/>, document.querySelector('nav')); 
+ReactDOM.render( <Nuskin />, document.getElementById('root'));
 
-ReactDOM.render(<Nuskin />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
