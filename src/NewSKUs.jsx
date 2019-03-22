@@ -28,6 +28,8 @@ class NewSKUs extends Component {
                                  columns: [
                                     { Header: 'SKU',              accessor: 'sku',            style: { textAlign: "center" }  }, 
                                     { Header: 'Description',      accessor: 'description',    style: { textAlign: "left" }  }, 
+                                    { Header: 'PSV',  accessor: 'psv',   style: { textAlign: "right" },
+                                    }, 
                                     { Header: 'Wholesale Price',  accessor: 'wholesalePrice', style: { textAlign: "right" }, 
                                         
                                         Cell: (props) => (
@@ -45,20 +47,6 @@ class NewSKUs extends Component {
                                                  </div>
                                                  )
                                         }, 
-                                    { Header: 'PSV',  accessor: 'psv',   style: { textAlign: "right" },
-                                            Cell: (props) => (
-                                                    <CurrencyInput value={props.original.psv != null ? props.original.psv:undefined} onChangeEvent={ (ev)=> {this.onPsvChange(ev, props.index)}}>
-                                                    </CurrencyInput>
-                                                    )
-                                           }, 
-/*
-                                    { Header: 'CSV',  accessor: 'csv',  style: { textAlign: "right" },  
-                                        Cell: (props) => (
-                                                <CurrencyInput value={props.original.csv != null ? props.original.csv:undefined} onChangeEvent={ (ev)=> {this.onCsvChange(ev, props.index)}}>
-                                                </CurrencyInput>
-                                                )
-                                       }, 
-*/
                                   ]
                                }];
         
@@ -86,23 +74,27 @@ class NewSKUs extends Component {
         var anError = false;
         
         for (var sku of this.skus) {
+            // TODO show the user whats wrong - just highlighting invalid rows isn't that helpful  
             sku.error = false;
             if (sku.retailPrice == null || sku.psv == null ) {
-                // TODO show the user whats missing - 
                 sku.error = true;
                 anError = true;
             }
             
+            // Make sure retail price is at least the wholesale price. 
+            // Some specials are not available at retail price, but 
             if (sku.retailPrice  < sku.wholesalePrice) {
                 sku.error = true;
                 anError = true;
             }
             
-            // What can we say about PSV? Its about 1 PSV per 1 USD so it should be around 1/1.3 of the wholesale? price   
-            if (sku.psv > sku.wholesalePrice) {
-                sku.error = true;
-                anError = true;
-            }
+            // What can we say about PSV? Its about 1 PSV per 1 USD so it should be around 1/1.3 of the wholesale? price
+            // But sometimes there are special offers, eg Galvanic SPA kit at $248 with a PSV of 250, so can't really test anything
+            // The PSV is always known from the order so don't need to check it really
+            //if (sku.psv > sku.wholesalePrice) {
+            //    sku.error = true;
+            //    anError = true;
+            //}
             
         }
         
@@ -181,7 +173,7 @@ class NewSKUs extends Component {
                                 description: item.description,
                                 wholesalePrice: item.costPrice,
                                 retailPrice: null,
-                                psv: null,
+                                psv: item.costPoints,
                                 csv: 0,
                                 modified: false,
                                 error: false };
@@ -191,6 +183,11 @@ class NewSKUs extends Component {
             }
         }
         
+        
+        if (this.props.show && this.skus.length == 0) {
+            console.log("What? show zero items?");
+        }
+        
         return (<div>
                  <Modal show={this.props.show} onHide={this.handleClose}
                         size="lg"
@@ -198,15 +195,15 @@ class NewSKUs extends Component {
                         centered
                   >
                   <Modal.Header closeButton>
-                    <Modal.Title>New SKUs found on order</Modal.Title>
+                    <Modal.Title>New SKUs found on order {this.props.filename}</Modal.Title>
                   </Modal.Header>
                   <Modal.Body>
-                    <p>One or more SKUs on this order are not in our database. Please provide additional
+                    <p>One or more SKUs on this order are not in the database. Please provide additional
                        information
                        The order cost price is assumed to be the wholesale price.
                        To calculate tax on individual items on orders on DISTRIBUTOR accounts 
-                       it is also necessary to know the retail price. Please also provide the PSV
-                       CSV is optional
+                       it is also necessary to know the retail price.
+                       PSV is shown for information
                     </p>
                     <Button onClick={this.onSave} >Save</Button>
                     <ReactTable minRows="1" data={this.skus} columns={this.productColumns} getTrProps={this.getTrProps} />
