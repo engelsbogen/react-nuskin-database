@@ -152,7 +152,10 @@ class Nuskin extends Component {
 
    
   update(res) {
-      this.setState ({ data : res.data });
+      
+      if (res.headers['content-type'].startsWith("application/json")) {
+          this.setState ({ data : res.data });
+      }
   }
   
   
