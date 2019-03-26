@@ -9,14 +9,29 @@ export class NuskinNavBar extends React.Component {
 
     constructor(props) {
         super(props)
+        
+        // Method bindings
         this.handleSelect = this.handleSelect.bind(this);
         this.close = this.close.bind(this);
         this.onSetYear = this.onSetYear.bind(this);
         this.setYear = this.setYear.bind(this);
+        
+        // Data members
         this.state = { view: {showConnectionDialog: false,
                               showCaptureDialog: false}}
         
-        this.setYear(2019);
+        // Make list of all years from 2018 to current date. Render will create a button for each year
+        // Note that the back-end must have a data source (database) configured for each year
+        
+        this.years = [];
+        var currentYear = new Date().getFullYear();
+        for (var year=2018; year <= currentYear; year++ ) {
+            this.years.push(year);
+        }
+
+        // TODO - (maybe) save the last selected year in a Cookie
+        // for now assume we want the current year's data
+        this.setYear(currentYear);
         
     }
     
@@ -33,16 +48,17 @@ export class NuskinNavBar extends React.Component {
         
         // Refresh the main Nuskin component
         refreshMainView();
-        
     }
 
     setYear(year) {
         this.year = year;
-        axios.defaults.headers.common['X-TenantID'] = 'nuskin' + year;  // for all requests
+        // Add the X-TenantID to all requests made through the axios library
+        axios.defaults.headers.common['X-TenantID'] = 'nuskin' + year;
     }
 
     
     render() {
+        
         return (
             <div>
             <Navbar bg="light" collapseOnSelect >
@@ -58,9 +74,10 @@ export class NuskinNavBar extends React.Component {
                 <Navbar.Toggle />
                 <Navbar.Collapse>
                 <Nav onSelect={this.handleSelect}>
-                   <ToggleButtonGroup type="radio" name="year" defaultValue={2019}  onChange={this.onSetYear} > 
-                     <ToggleButton variant="outline-primary"  defaultChecked value={2018}  >2018</ToggleButton>
-                     <ToggleButton variant="outline-primary"  value={2019}  >2019</ToggleButton>
+                   <ToggleButtonGroup type="radio" name="year" defaultValue={ this.year }  onChange={this.onSetYear} > 
+                
+                     {this.years.map( (year, index) => ( <ToggleButton key={index} variant="outline-primary" value={year} >{year}</ToggleButton>))  }
+                
                    </ToggleButtonGroup>
                    <Nav.Link eventKey={2} href="#reports" >
                      <span className="glyphicon glyphicon-folder-open" aria-hidden="true"></span>
