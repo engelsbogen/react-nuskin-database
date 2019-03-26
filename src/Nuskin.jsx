@@ -22,13 +22,9 @@ class Nuskin extends Component {
 
       super(props);
 
-      
-      console.log(this.props.year);
-      
       // Bind methods to this instance
       this.onAddOrder = this.onAddOrder.bind(this);
       this.onFileSelected = this.onFileSelected.bind(this);
-      this.onFileLoaded = this.onFileLoaded.bind(this);
       this.getTrProps = this.getTrProps.bind(this);
       this.subComponent = this.subComponent.bind(this);
       this.showResponse = this.showResponse.bind(this);
@@ -39,35 +35,20 @@ class Nuskin extends Component {
       this.doNextUpload = this.doNextUpload.bind(this);
       this.getTotal = this.getTotal.bind(this);
       this.makeOrderColumns = this.makeOrderColumns.bind(this);
-      
-      this.setYear = this.setYear.bind(this);   
-      this.onSetYear = this.onSetYear.bind(this);  // button handler
-      
+
+      // Data members 
       this.selectedFile = null;
       this.nextUploadIndex  = 0;
-      this.setYear('2019');
-      
       this.makeOrderColumns();
-      
       this.state =  { data: null,
-          columns : this.orderColumns,
-          newSKUs: null,
-          show : false };
-
-
+                      columns : this.orderColumns,
+                      newSKUs: null,
+                      showNewSKUs : false };
       
   }
   
   
-  setYear(year) {
-      this.year = year;
-      axios.defaults.headers.common['X-TenantID'] = 'nuskin' + year;  // for all requests
-  }
-  
-  onSetYear(year) {
-      this.setYear(year);
-      this.refresh();
-  }
+
   
   makeOrderColumns() {
       
@@ -142,10 +123,6 @@ class Nuskin extends Component {
   }
   
   refresh() {
-      
-      // Add X-TenantID header to identify database 
-     // fetch("/orders", { headers: { "X-TenantID" : "nuskin" + this.year}})
-     //.then( res => res.json())
      axios.get("/orders")
       .then( (res) => {this.update(res) } );
   }
@@ -157,21 +134,6 @@ class Nuskin extends Component {
           this.setState ({ data : res.data });
       }
   }
-  
-  
-  onFileLoaded(ev) {
-      console.log("File loaded");
-      
-      axios.post("/orderfileupload", { file: ev.target.result} )
-      .then(function (response) {
-          console.log(response);
-        })
-      .catch(function (error) {
-          console.log(error);
-        });
-  }
-  
-
   
   showResponse(res) {
       var showDialog = res.data && res.data.unknownItems.length > 0;
@@ -186,19 +148,19 @@ class Nuskin extends Component {
               this.doNextUpload();
           }
           else {
-              this.setState ( { newSKUs: [], show: false } );
+              this.setState ( { newSKUs: [], showNewSKUs: false } );
               this.refresh();
           }
       }
       else {
-          this.setState( { newSKUs: res.data.unknownItems, show: true } );
+          this.setState( { newSKUs: res.data.unknownItems, showNewSKUs: true } );
       }
       
   }
   
   onHideDialog(skusUpdated) {
       
-      this.setState({ newSKUs: [], show: false});
+      this.setState({ newSKUs: [], showNewSKUs: false});
       
       if (skusUpdated) {
           // Retry sending the order
@@ -208,7 +170,7 @@ class Nuskin extends Component {
   }
   
   handleShow() {
-      this.setState( { show:true});
+      this.setState( { showNewSKUs:true});
   }
   
   handleUploadError(err) {
@@ -230,7 +192,6 @@ class Nuskin extends Component {
   
   onAddOrder(askConfirmation) {
       
-      // Options: upload file, copy from clipboard, paste into edit box
       if (this.selectedFile != null) {
           if ( !askConfirmation || window.confirm("Uploading orders ")) {
 
@@ -282,8 +243,6 @@ class Nuskin extends Component {
 
       const data = this.state.data ? this.state.data : undefined;
     
-      var show = (this.state.newSKUs && this.state.newSKUs.length > 0);
-      
       var orderFilename = "";
       if (this.selectedFile && this.nextUploadIndex < this.selectedFile.length) {
           orderFilename = this.selectedFile[this.nextUploadIndex].name;
@@ -293,7 +252,7 @@ class Nuskin extends Component {
       
       return  (
            <>      
-              <NewSKUs filename={ orderFilename } data={this.state.newSKUs} show={ this.state.show } onHide={this.onHideDialog} /> 
+              <NewSKUs filename={ orderFilename } data={this.state.newSKUs} show={ this.state.showNewSKUs } onHide={this.onHideDialog} /> 
               <form style={{margin: '10px'}}>
               <div className="file btn btn-primary"><input type="file" multiple onChange={this.onFileSelected} /></div>
               <Button onClick={() => {this.onAddOrder(true);} }>Upload Orders</Button>
@@ -312,8 +271,6 @@ class Nuskin extends Component {
           );
   }
 }
-
-
 
   
 export default Nuskin;

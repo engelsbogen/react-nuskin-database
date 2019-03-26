@@ -84,10 +84,7 @@ class Products extends Component {
       
   }
 
-//  <Form.Control value={props.value != null ? props.value:undefined} onChange={ (ev)=> {this.onSellingPriceChange(ev, props.index)}} >
-//  </Form.Control>
-
-  
+ 
   refresh() {
       axios.get("/products?orderNumber=" + this.props.orderDetails.orderNumber)
       //.then( res => res.json())
@@ -281,13 +278,6 @@ class Products extends Component {
   }
 }
 
-  
-export function showProducts(orderNumber) {
 
-    ReactDOM.render(<Products orderNumber={orderNumber} />, document.getElementById('root'));
-}
-  
-
-window.showProducts = showProducts;
 
 export default Products;
