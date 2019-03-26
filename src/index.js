@@ -7,9 +7,20 @@ import NuskinNavBar from 'NuskinNavBar';
 import NuskinAlert from 'NuskinAlert';
 //import App from 'Test';
 
+var gYear = 2018;
+
+var nuskinRef = React.createRef();
+
+function refreshMainView() {
+	
+	nuskinRef.current.refresh();
+}
+
+
+
 ReactDOM.render( <NuskinNavBar/>, document.querySelector('nav')); 
 ///ReactDOM.render( <App />, document.getElementById('root'));
-ReactDOM.render( <Nuskin />, document.getElementById('root'));
+ReactDOM.render( <Nuskin ref={nuskinRef} />, document.getElementById('root'));
 ReactDOM.render( <NuskinAlert />, document.getElementById('alert'));
 
 
@@ -17,3 +28,6 @@ ReactDOM.render( <NuskinAlert />, document.getElementById('alert'));
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: http://bit.ly/CRA-PWA
 serviceWorker.unregister();
+
+
+export { refreshMainView };
