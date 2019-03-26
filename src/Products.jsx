@@ -6,6 +6,8 @@ import { Tab, Tabs, Form, FormGroup, FormControl, Control, ControlLabel, Checkbo
 import ReactTable from "react-table";
 import 'react-table/react-table.css';
 import CurrencyInput from 'react-currency-input';
+import axios from "axios";
+
 
 class Products extends Component {
    
@@ -87,9 +89,9 @@ class Products extends Component {
 
   
   refresh() {
-      fetch("/products?orderNumber=" + this.props.orderDetails.orderNumber)
-      .then( res => res.json())
-      .then( (res) => {this.update(res) } );
+      axios.get("/products?orderNumber=" + this.props.orderDetails.orderNumber)
+      //.then( res => res.json())
+      .then( (res) => {this.update(res.data) } );
   }
 
   update(res) {
@@ -169,18 +171,10 @@ class Products extends Component {
       
       
       if (!anyError) {
-      
-          fetch('/updateitems', {
-              method: 'PUT',   // Updates use PUT request
-              headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(modifiedRows),
-          })
-          // When that completes, refresh everything
-          .then( () => { this.refresh();} );
-      
+
+          axios.put('/updateitems',  modifiedRows)
+               .then( () => { this.refresh();} );
+    
        }
        else {
            

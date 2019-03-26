@@ -22,6 +22,9 @@ class Nuskin extends Component {
 
       super(props);
 
+      
+      console.log(this.props.year);
+      
       // Bind methods to this instance
       this.onAddOrder = this.onAddOrder.bind(this);
       this.onFileSelected = this.onFileSelected.bind(this);
@@ -37,8 +40,12 @@ class Nuskin extends Component {
       this.getTotal = this.getTotal.bind(this);
       this.makeOrderColumns = this.makeOrderColumns.bind(this);
       
+      this.setYear = this.setYear.bind(this);   
+      this.onSetYear = this.onSetYear.bind(this);  // button handler
+      
       this.selectedFile = null;
       this.nextUploadIndex  = 0;
+      this.setYear('2019');
       
       this.makeOrderColumns();
       
@@ -52,15 +59,23 @@ class Nuskin extends Component {
   }
   
   
+  setYear(year) {
+      this.year = year;
+      axios.defaults.headers.common['X-TenantID'] = 'nuskin' + year;  // for all requests
+  }
+  
+  onSetYear(year) {
+      this.setYear(year);
+      this.refresh();
+  }
   
   makeOrderColumns() {
       
-
       this.orderColumns = [
         { expander: true},
         { Header: "Orders", 
            columns: [
-              { Header: 'Month',         width: 120,  accessor: 'month',        style: { textAlign: "center" } }, 
+              { Header: 'Month',         width: 120,  accessor: 'month',        style: { textAlign: "left" } }, 
               { Header: 'Order Number',  
                   Aggregated: ()=> { return  (<span/>); },  // Empty in aggregated row
                   width: 100,  accessor: 'orderNumber',  style: { textAlign: "center" }, Cell: props => ( <a href={"/orderfiledownload?orderNumber=" + props.value}>{props.value}</a> )}, 
@@ -121,15 +136,23 @@ class Nuskin extends Component {
       this.refresh();
   }
   
+  shouldComponentUpdate(nextProps, nextState) {
+      console.log(nextProps);
+      return true;
+  }
+  
   refresh() {
-      fetch("/orders")
-      .then( res => res.json())
+      
+      // Add X-TenantID header to identify database 
+     // fetch("/orders", { headers: { "X-TenantID" : "nuskin" + this.year}})
+     //.then( res => res.json())
+     axios.get("/orders")
       .then( (res) => {this.update(res) } );
   }
 
    
   update(res) {
-      this.setState ({ data : res });
+      this.setState ({ data : res.data });
   }
   
   
@@ -208,38 +231,10 @@ class Nuskin extends Component {
       if (this.selectedFile != null) {
           if ( !askConfirmation || window.confirm("Uploading orders ")) {
 
-
               this.nextUploadIndex = 0;
               
               this.doNextUpload();
-              
-//              for (var x = 0; x < this.selectedFile.length; x++) {
-//                  var formData = new FormData();
-//                  formData.append("file", this.selectedFile[x]);
-//                  formData.append('name', 'thefilename');
-//                  formData.append('description', 'anupload');
-//                  axios.post("/orderfileupload", formData) 
-//                      .then(res => { this.showResponse(res); })
-//                      .catch( err=> { this.handleUploadError(err); });
-//              }
-              
-              
-              /*              
-              var formData = new FormData();
-              for (var x = 0; x < this.selectedFile.length; x++) {
-                  formData.append("file[]", this.selectedFile[x]);
-              }
-              formData.append('name', 'thefilename');
-              formData.append('description', 'anupload');
-              
-              axios.post("/orderfileuploadmulti", formData) 
-              .then(res => { this.showResponse(res);  })
-              .catch( err=> { this.handleUploadError(err); });
-              */
-          }
-          
-              
-              
+          }  
       }
       
   }
@@ -298,7 +293,7 @@ class Nuskin extends Component {
               <NewSKUs filename={ orderFilename } data={this.state.newSKUs} show={ this.state.show } onHide={this.onHideDialog} /> 
               <form style={{margin: '10px'}}>
               <div className="file btn btn-primary"><input type="file" multiple onChange={this.onFileSelected} /></div>
-              <Button onClick={() => {this.onAddOrder(true);} }>Add Order</Button>
+              <Button onClick={() => {this.onAddOrder(true);} }>Upload Orders</Button>
            
               </form>         
               <ReactTable data={data} 

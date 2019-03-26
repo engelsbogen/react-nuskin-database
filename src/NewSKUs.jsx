@@ -4,6 +4,7 @@ import 'react-table/react-table.css';
 import { Modal, Button } from 'react-bootstrap'
 import "./index.css";
 import CurrencyInput from 'react-currency-input';
+import axios from "axios";
 
 class NewSKUs extends Component {
     
@@ -104,17 +105,9 @@ class NewSKUs extends Component {
         }
         
         // If all info provided, send to server
-        
-        fetch('/createskus', {
-            method: 'PUT',   
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(this.skus),
-        })
-        // After response received, close the dialog
-        .then( (res) => {this.handleSaved(res); } );
+  
+        axios.put('/createskus', this.skus)
+             .then( (res) => {this.handleSaved(res.data); } );
         
     }
     
