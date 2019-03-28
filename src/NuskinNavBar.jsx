@@ -2,7 +2,7 @@
 import React from 'react';
 import { Navbar, Nav, NavItem, NavDropdown, MenuItem, Form, Button, 
         ToggleButton, ToggleButtonGroup, Modal  } from 'react-bootstrap';
-import {refreshMainView} from 'index';
+import {refreshMainView, showReport } from 'index';
 import axios from "axios";
 
 export class NuskinNavBar extends React.Component {
@@ -37,6 +37,7 @@ export class NuskinNavBar extends React.Component {
     
     
     handleSelect(selectedKey) {
+        showReport();
         console.log(selectedKey);
     }
     
@@ -75,11 +76,9 @@ export class NuskinNavBar extends React.Component {
                 <Navbar.Collapse>
                 <Nav onSelect={this.handleSelect}>
                    <ToggleButtonGroup type="radio" name="year" defaultValue={ this.year }  onChange={this.onSetYear} > 
-                
-                     {this.years.map( (year, index) => ( <ToggleButton key={index} variant="outline-primary" value={year} >{year}</ToggleButton>))  }
-                
+                     {this.years.map( (year) => ( <ToggleButton key={year} variant="outline-primary" value={year} >{year}</ToggleButton>))  }
                    </ToggleButtonGroup>
-                   <Nav.Link eventKey={2} href="#reports" >
+                   <Nav.Link eventKey={2} href="#report" >
                      <span className="glyphicon glyphicon-folder-open" aria-hidden="true"></span>
                      &nbsp; Reports
                    </Nav.Link>

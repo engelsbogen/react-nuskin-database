@@ -5,6 +5,7 @@ import Nuskin from 'Nuskin';
 import * as serviceWorker from './serviceWorker';
 import NuskinNavBar from 'NuskinNavBar';
 import NuskinAlert from 'NuskinAlert';
+import Report from 'Report';
 
 // Get a reference to the main Nuskin component so that we can force
 // it to refresh when the year is changed.
@@ -13,13 +14,24 @@ import NuskinAlert from 'NuskinAlert';
 // After the new data has been received the component will re-render itself
 var nuskinRef = React.createRef();
 
+var reportRef = React.createRef();
+
 function refreshMainView() {
 	nuskinRef.current.refresh();
 }
 
 
+function showReport() {
+	reportRef.current.showReport();
+}
+
+
 ReactDOM.render( <NuskinNavBar/>, document.querySelector('nav')); 
-ReactDOM.render( <Nuskin ref={nuskinRef} />, document.getElementById('root'));
+ReactDOM.render( <div>
+                    <Report ref={reportRef} />
+		            <Nuskin ref={nuskinRef} /> 
+		         </div>, 
+		document.getElementById('root'));
 ReactDOM.render( <NuskinAlert />, document.getElementById('alert'));
 
 
@@ -29,4 +41,4 @@ ReactDOM.render( <NuskinAlert />, document.getElementById('alert'));
 serviceWorker.unregister();
 
 
-export { refreshMainView };
+export { refreshMainView, showReport };

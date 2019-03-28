@@ -111,22 +111,15 @@ class Nuskin extends Component {
           return 0;
       }
   }
-
      
   componentDidMount() {
       this.refresh();
-  }
-  
-  shouldComponentUpdate(nextProps, nextState) {
-      console.log(nextProps);
-      return true;
   }
   
   refresh() {
      axios.get("/orders")
       .then( (res) => {this.update(res) } );
   }
-
    
   update(res) {
       
@@ -173,8 +166,8 @@ class Nuskin extends Component {
       this.setState( { showNewSKUs:true});
   }
   
+  // Called if an error code is returned from the server after uploading a file
   handleUploadError(err) {
-
       NuskinAlert.showAlert(err.response.data.message);
   }
   
@@ -200,18 +193,17 @@ class Nuskin extends Component {
               this.doNextUpload();
           }  
       }
-      
   }
   
   onFileSelected(ev) {
       this.selectedFile = ev.target.files;
   }
   
-  
   getTrProps(state, rowInfo) {
       
+      // Colour order green if all its items have been accounted for, ie sold, given away as sample, 
+      // used for demonstration or for personal use 
       // yellow "#EDF7A3"  green "#CEF7A3",
-      
       if (rowInfo && rowInfo.original && !rowInfo.original.hasUnsoldItems) {
           return {
               style : { 
@@ -222,10 +214,9 @@ class Nuskin extends Component {
       else {
           return {};
       }
-      
   }
   
-  
+  // Individual order details are a subcomponent of order summary row
   subComponent(rowInfo) {
      if (rowInfo && rowInfo.row && rowInfo.row.orderNumber) { 
           return (
