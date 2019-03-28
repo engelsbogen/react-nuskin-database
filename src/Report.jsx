@@ -87,7 +87,7 @@ class Report extends React.Component {
         var sum2 = this.data.salesCost + this.data.demoCost + this.data.sampleCost;
         
         if (sum1 != sum2) {
-            console.log("Hmm, these should be the same:" + sum1 + " : " + sum2);
+            console.log("These should be the same:" + sum1 + " : " + sum2);
         }
         
         return sum1;
@@ -142,13 +142,13 @@ class Report extends React.Component {
             <Table striped bordered hover>
                 <TableHeader headings={["Description", "Quantity", "Cost"] } />
                 <tbody>
-                   <TableRow desc="Products sold"      
+                   <TableRow desc="Products Sold"      
                              quantity = { this.itemText(this.data.soldItemCount) } 
                              amount = { this.data.salesCost}  />
-                   <TableRow desc="Products demonstrated"      
+                   <TableRow desc="Products Demonstrated"      
                              quantity = { this.itemText(this.data.demoItemCount) } 
                              amount = { this.data.demoCost}  />
-                   <TableRow desc="Sample Poducts"    
+                   <TableRow desc="Sample Products"    
                              quantity = { this.itemText(this.data.sampleItemCount) }
                              amount = {this.data.sampleCost } />
                    <TableRow desc="Personal Products"  
