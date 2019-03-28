@@ -19,7 +19,6 @@ function TableRow(props) {
 function showHeading(heading, index) {
     
     var head = <th key={index}>{heading}</th>;
-    console.log(head);
     return head;
 }
 
@@ -48,6 +47,8 @@ class Report extends React.Component {
         this.getCostOfGoodsSold = this.getCostOfGoodsSold.bind(this);
         this.getProfit = this.getProfit.bind(this);
         this.itemText = this.itemText.bind(this);
+        this.profitLossSummary= this.profitLossSummary.bind(this);
+        this.productDispositionSummary = this.productDispositionSummary.bind(this);
         
         this.state  = {show :  true };
         this.data = null;
@@ -99,62 +100,78 @@ class Report extends React.Component {
         
     }
     
+    
+    profitLossSummary() {
+
+        return (
+            <Table striped bordered hover>
+                <TableHeader headings={["Description", "Quantity", "Amount"] } />
+                <tbody>
+                 <TableRow desc="Opening Inventory"  
+                           quantity={this.itemText(this.data.openingInventoryItemCount) }
+                           amount={this.data.openingInventory} />
+                 <TableRow desc="Purchases"          
+                           quantity = { this.data.orderCount + " orders / " + this.itemText(this.data.purchasedItemCount) }  
+                           amount={this.data.purchases } />
+                 <TableRow desc="Gross Sales"              
+                           quantity = { this.itemText(this.data.soldItemCount) }      
+                           amount={ this.data.grossSales  } />
+                 <TableRow desc="Closing Inventory"  
+                           quantity = { this.itemText(this.data.inventoryItemCount) } 
+                           amount={this.data.closingInventory} />
+                 <TableRow desc="Cost of goods sold/demo/samples" 
+                           quantity = { this.itemText(this.data.soldItemCount + this.data.demoItemCount + this.data.sampleItemCount) }
+                           amount={this.getCostOfGoodsSold() } />
+                 <TableRow style = { {fontWeight : 'bold'} }
+                           desc="Profit/(Loss)"      
+                           amount={this.getProfit() } />
+                 </tbody>
+             </Table> 
+         );
+    }
+
+    productDispositionSummary() {
+        
+        return (
+        
+            <Table striped bordered hover>
+                <TableHeader headings={["Description", "Quantity", "Cost"] } />
+                <tbody>
+                   <TableRow desc="Products sold"      
+                             quantity = { this.itemText(this.data.soldItemCount) } 
+                             amount = { this.data.salesCost}  />
+                   <TableRow desc="Products demonstrated"      
+                             quantity = { this.itemText(this.data.demoItemCount) } 
+                             amount = { this.data.demoCost}  />
+                   <TableRow desc="Sample Poducts"    
+                             quantity = { this.itemText(this.data.sampleItemCount) }
+                             amount = {this.data.sampleCost } />
+                   <TableRow desc="Personal Products"  
+                             quantity = { this.itemText(this.data.personalUseItemCount) }
+                             amount = { this.data.personalUseCost } />
+                 </tbody>
+             </Table>
+        );
+    }
+    
     render() {
       
       if (this.state.show && this.data) {
           return ( <div>
-                    <Form style={{margin: '10px'}}>
-                    <Button onClick={() => {this.onClose();} }>Close</Button>
+                      <Form style={{margin: '10px'}}>
+                      <Button onClick={() => {this.onClose();} }>Close</Button>
                     
                     <Table striped bordered hover>
                         <TableHeader headings={["Summary Profit/Loss year to date"] } />
                         <tbody><tr><td>
-                            <Table striped bordered hover>
-                                <TableHeader headings={["Description", "Quantity", "Amount"] } />
-                                <tbody>
-                                 <TableRow desc="Opening Inventory"  
-                                           quantity={this.itemText(this.data.openingInventoryItemCount) }
-                                           amount={this.data.openingInventory} />
-                                 <TableRow desc="Purchases"          
-                                           quantity = { this.data.orderCount + " orders / " + this.itemText(this.data.purchasedItemCount) }  
-                                           amount={this.data.purchases } />
-                                 <TableRow desc="Gross Sales"              
-                                           quantity = { this.itemText(this.data.soldItemCount) }      
-                                           amount={ this.data.grossSales  } />
-                                 <TableRow desc="Closing Inventory"  
-                                           quantity = { this.itemText(this.data.inventoryItemCount) } 
-                                           amount={this.data.closingInventory} />
-                                 <TableRow desc="Cost of goods sold/demo/samples" 
-                                           quantity = { this.itemText(this.data.soldItemCount + this.data.demoItemCount + this.data.sampleItemCount) }
-                                           amount={this.getCostOfGoodsSold() } />
-                                 <TableRow style = { {fontWeight : 'bold'} }
-                                           desc="Profit/(Loss)"      
-                                           amount={this.getProfit() } />
-                                 </tbody>
-                             </Table>
+                            {this. profitLossSummary() }
                          </td></tr></tbody>
                     </Table>
 
                      <Table striped bordered hover>
                               <TableHeader headings={["Summary Products disposition year to date"] } />
                               <tbody><tr><td>
-                                 <Table striped bordered hover>
-                                      <TableHeader headings={["Description", "Quantity", "Cost"] } />
-                                      <tbody>
-                                         <TableRow desc="Products sold"      
-                                                   quantity = { this.itemText(this.data.soldItemCount) } 
-                                                   amount = { this.data.salesCost}  />
-                                         <TableRow desc="Products demonstrated"      
-                                                   quantity = { this.itemText(this.data.demoItemCount) } 
-                                                   amount = { this.data.demoCost}  />
-                                         <TableRow desc="Sample Poducts"    
-                                                   quantity = { this.itemText(this.data.sampleItemCount) }
-                                                   amount = {this.data.sampleCost } />
-                                         <TableRow desc="Personal Products"  
-                                                   quantity = { this.itemText(this.data.personalUseItemCount) }
-                                                   amount = { this.data.personalUseCost } />
-                                        </tbody>
-                                </Table>
+                                 {this.productDispositionSummary() }
                             </td></tr></tbody>
                     </Table>
                     </Form>         
