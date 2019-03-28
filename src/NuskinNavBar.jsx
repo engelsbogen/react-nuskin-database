@@ -2,7 +2,7 @@
 import React from 'react';
 import { Navbar, Nav, NavItem, NavDropdown, MenuItem, Form, Button, 
         ToggleButton, ToggleButtonGroup, Modal  } from 'react-bootstrap';
-import {refreshMainView, showReport, showOrders } from 'index';
+import NuskinOrderManager from 'NuskinOrderManager';
 import axios from "axios";
 
 export class NuskinNavBar extends React.Component {
@@ -37,8 +37,8 @@ export class NuskinNavBar extends React.Component {
     
     
     handleSelect(selectedKey) {
-        if (selectedKey == 1) showOrders();
-        else showReport();
+        if (selectedKey == 1) NuskinOrderManager.showOrders();
+        else NuskinOrderManager.showReport();
     }
     
     close() {
@@ -48,7 +48,7 @@ export class NuskinNavBar extends React.Component {
         this.setYear(year); 
         
         // Refresh the main Nuskin component
-        refreshMainView();
+        NuskinOrderManager.refreshMainView();
     }
 
     setYear(year) {

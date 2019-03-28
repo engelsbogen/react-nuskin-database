@@ -16,7 +16,7 @@ var lodash = _;
 
 const cadFormat = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' })
 
-class Nuskin extends Component {
+class OrdersView extends Component {
    
   constructor(props) {
 
@@ -264,4 +264,4 @@ class Nuskin extends Component {
 }
 
   
-export default Nuskin;
+export default OrdersView;

@@ -16,7 +16,7 @@ function TableRow(props) {
 }
 
 
-function showHeading(heading, index) {
+function makeHeading(heading, index) {
     
     var head = <th key={index}>{heading}</th>;
     return head;
@@ -25,36 +25,30 @@ function showHeading(heading, index) {
 function TableHeader(props) {
    
     return ( <thead>
-            <tr>
-            { 
-                props.headings.map( (t, i) => showHeading(t,i) )
-            }
+            <tr> 
+              { props.headings.map( (t, i) => makeHeading(t,i) ) }
             </tr>
              </thead>
-            );
-    
+           );
 }
 
 
-class Report extends React.Component {
+class ReportView extends React.Component {
 
     constructor(props) {
         super(props);
-        
+        // Bind methods
         this.getData = this.getData.bind(this);
-        this.onClose = this.onClose.bind(this);
         this.refresh = this.refresh.bind(this);
         this.getCostOfGoodsSold = this.getCostOfGoodsSold.bind(this);
         this.getProfit = this.getProfit.bind(this);
         this.itemText = this.itemText.bind(this);
         this.profitLossSummary= this.profitLossSummary.bind(this);
         this.productDispositionSummary = this.productDispositionSummary.bind(this);
-        
-        this.state  = {show :  true };
+        // Data members
         this.data = null;
         
     }
-
     
     componentDidMount() {
         this.getData();
@@ -62,21 +56,15 @@ class Report extends React.Component {
 
     refresh(res) {
         this.data = res.data;
-        this.setState ( {show :  true } );
         this.forceUpdate();
     }
     
     getData() {
-        
         // Request report from server
         axios.get("/report?period=year")
              .then( (res) => { this.refresh(res); } );
-        
     }
     
-    onClose() {
-        this.setState ( {show :  false } );
-    }
     
     getCostOfGoodsSold() {
         // Subtract personal use items 
@@ -161,14 +149,14 @@ class Report extends React.Component {
     
     render() {
       
-      if (this.state.show && this.data) {
+      if (this.data) {
           return ( <div>
                       <Form style={{margin: '10px'}}>
                     
                     <Table striped bordered hover>
                         <TableHeader headings={["Summary Profit/Loss year to date"] } />
                         <tbody><tr><td>
-                            {this. profitLossSummary() }
+                            {this.profitLossSummary() }
                          </td></tr></tbody>
                     </Table>
 
@@ -189,4 +177,4 @@ class Report extends React.Component {
     
 }
 
-export default Report;
+export default ReportView;
