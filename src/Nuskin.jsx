@@ -31,7 +31,7 @@ class Nuskin extends Component {
       this.onHideDialog = this.onHideDialog.bind(this);
       this.handleShow = this.handleShow.bind(this);
       this.handleUploadError = this.handleUploadError.bind(this);
-      this.refresh = this.refresh.bind(this);
+      this.getData = this.getData.bind(this);
       this.doNextUpload = this.doNextUpload.bind(this);
       this.getTotal = this.getTotal.bind(this);
       this.makeOrderColumns = this.makeOrderColumns.bind(this);
@@ -113,10 +113,10 @@ class Nuskin extends Component {
   }
      
   componentDidMount() {
-      this.refresh();
+      this.getData();
   }
   
-  refresh() {
+  getData() {
      axios.get("/orders")
       .then( (res) => {this.update(res) } );
   }

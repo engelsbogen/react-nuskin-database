@@ -41,7 +41,7 @@ class Report extends React.Component {
     constructor(props) {
         super(props);
         
-        this.showReport = this.showReport.bind(this);
+        this.getData = this.getData.bind(this);
         this.onClose = this.onClose.bind(this);
         this.refresh = this.refresh.bind(this);
         this.getCostOfGoodsSold = this.getCostOfGoodsSold.bind(this);
@@ -52,16 +52,21 @@ class Report extends React.Component {
         
         this.state  = {show :  true };
         this.data = null;
+        
     }
 
     
+    componentDidMount() {
+        this.getData();
+    }
+
     refresh(res) {
-        console.log(res.data);
         this.data = res.data;
         this.setState ( {show :  true } );
+        this.forceUpdate();
     }
     
-    showReport() {
+    getData() {
         
         // Request report from server
         axios.get("/report?period=year")
@@ -159,7 +164,6 @@ class Report extends React.Component {
       if (this.state.show && this.data) {
           return ( <div>
                       <Form style={{margin: '10px'}}>
-                      <Button onClick={() => {this.onClose();} }>Close</Button>
                     
                     <Table striped bordered hover>
                         <TableHeader headings={["Summary Profit/Loss year to date"] } />

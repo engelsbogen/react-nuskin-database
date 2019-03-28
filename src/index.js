@@ -12,27 +12,61 @@ import Report from 'Report';
 // This is not just a re-render, have to re-query as the database used
 // will have changed.
 // After the new data has been received the component will re-render itself
-var nuskinRef = React.createRef();
 
-var reportRef = React.createRef();
+var appRef = React.createRef();
 
 function refreshMainView() {
-	nuskinRef.current.refresh();
+	appRef.current.refresh();
 }
-
 
 function showReport() {
-	reportRef.current.showReport();
+   appRef.current.showReport();
+}
+function showOrders() {
+	   appRef.current.showOrders();
+}
+
+class App extends React.Component {
+	
+	constructor(props) {
+		super(props);
+		this.state = { showReport: false };
+		
+		this.reportRef = React.createRef();
+		this.nuskinRef = React.createRef();
+	}
+	
+	refresh() {
+		if (this.state.showReport) {
+			this.reportRef.current.getData();
+		}
+		else {
+			this.nuskinRef.current.getData();
+		}
+		this.forceUpdate();
+	}
+	
+	showReport() {
+		this.setState( { showReport: true });
+	}
+	showOrders() {
+		this.setState( { showReport: false });
+	}
+	
+	render () {
+		if (this.state.showReport) {
+			return ( <Report ref={this.reportRef} /> );
+		}
+		else {
+			return ( <Nuskin ref={this.nuskinRef} /> );
+		}
+	}
 }
 
 
-ReactDOM.render( <NuskinNavBar/>, document.querySelector('nav')); 
-ReactDOM.render( <div>
-                    <Report ref={reportRef} />
-		            <Nuskin ref={nuskinRef} /> 
-		         </div>, 
-		document.getElementById('root'));
-ReactDOM.render( <NuskinAlert />, document.getElementById('alert'));
+ReactDOM.render( <NuskinNavBar/>,     document.querySelector('nav')); 
+ReactDOM.render( <App ref={appRef}/>, document.getElementById('root'));
+ReactDOM.render( <NuskinAlert />,     document.getElementById('alert'));
 
 
 // If you want your app to work offline and load faster, you can change
@@ -41,4 +75,4 @@ ReactDOM.render( <NuskinAlert />, document.getElementById('alert'));
 serviceWorker.unregister();
 
 
-export { refreshMainView, showReport };
+export { refreshMainView, showReport, showOrders };
