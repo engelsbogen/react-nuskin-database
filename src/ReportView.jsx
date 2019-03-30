@@ -1,5 +1,5 @@
 import React, { Component } from 'react'; 
-import { Button, Form, Table } from 'react-bootstrap'
+import { Button, Form, Table, ToggleButton, ToggleButtonGroup } from 'react-bootstrap'
 import axios from "axios";
 
 const cadFormat = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' })
@@ -43,10 +43,14 @@ class ReportView extends React.Component {
         this.getCostOfGoodsSold = this.getCostOfGoodsSold.bind(this);
         this.getProfit = this.getProfit.bind(this);
         this.itemText = this.itemText.bind(this);
+        this.onChoosePeriod = this.onChoosePeriod.bind(this);
         this.profitLossSummary= this.profitLossSummary.bind(this);
         this.productDispositionSummary = this.productDispositionSummary.bind(this);
         // Data members
         this.data = null;
+        
+        this.months = ['Jan', 'Feb', 'Mar', 'Apr', 'May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        this.period='year';
         
     }
     
@@ -59,9 +63,15 @@ class ReportView extends React.Component {
         this.forceUpdate();
     }
     
+    
+    onChoosePeriod(period) {
+        this.period = period;
+        this.getData();
+    }
+    
     getData() {
         // Request report from server
-        axios.get("/report?period=year")
+        axios.get("/report?period=" + this.period)
              .then( (res) => { this.refresh(res); } );
     }
     
@@ -151,10 +161,14 @@ class ReportView extends React.Component {
       
       if (this.data) {
           return ( <div>
-                      <Form style={{margin: '10px'}}>
-                    
+                    <Form style={{margin: '10px'}}>
+                        <ToggleButtonGroup type="radio" name="period" defaultValue={ 'year' }  onChange={this.onChoosePeriod} > 
+                        <ToggleButton key={'year'} variant="outline-primary" value={'year'} >Year to Date</ToggleButton>
+                        {this.months.map( (month) => ( <ToggleButton key={month} variant="outline-primary" value={month} >{month}</ToggleButton>))  }
+                    </ToggleButtonGroup>
+
                     <Table striped bordered hover>
-                        <TableHeader headings={["Summary Profit/Loss year to date"] } />
+                        <TableHeader headings={["Summary Profit/Loss for " + this.data.period] } />
                         <tbody><tr><td>
                             {this.profitLossSummary() }
                          </td></tr></tbody>

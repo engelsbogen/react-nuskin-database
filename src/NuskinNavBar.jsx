@@ -78,6 +78,8 @@ export class NuskinNavBar extends React.Component {
                    <ToggleButtonGroup type="radio" name="year" defaultValue={1}  onChange={this.handleSelect} > 
                      <ToggleButton  variant="outline-primary" value={1} >Orders</ToggleButton>
                      <ToggleButton  variant="outline-primary" value={2} >Reports</ToggleButton>
+                     <ToggleButton  variant="outline-primary" value={3} >Expenses</ToggleButton>
+                     <ToggleButton  variant="outline-primary" value={4} >Commission</ToggleButton>
                    </ToggleButtonGroup>
                    &nbsp;
                    <ToggleButtonGroup type="radio" name="year" defaultValue={ this.year }  onChange={this.onSetYear} > 
