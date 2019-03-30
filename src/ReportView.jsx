@@ -1,6 +1,8 @@
 import React, { Component } from 'react'; 
 import { Button, Form, Table, ToggleButton, ToggleButtonGroup } from 'react-bootstrap'
 import axios from "axios";
+import PeriodSelector from 'PeriodSelector';
+import {TableHeader} from 'TableHeader';
 
 const cadFormat = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' })
 
@@ -15,22 +17,6 @@ function TableRow(props) {
     
 }
 
-
-function makeHeading(heading, index) {
-    
-    var head = <th key={index}>{heading}</th>;
-    return head;
-}
-
-function TableHeader(props) {
-   
-    return ( <thead>
-            <tr> 
-              { props.headings.map( (t, i) => makeHeading(t,i) ) }
-            </tr>
-             </thead>
-           );
-}
 
 
 class ReportView extends React.Component {
@@ -162,10 +148,7 @@ class ReportView extends React.Component {
       if (this.data) {
           return ( <div>
                     <Form style={{margin: '10px'}}>
-                        <ToggleButtonGroup type="radio" name="period" defaultValue={ 'year' }  onChange={this.onChoosePeriod} > 
-                        <ToggleButton key={'year'} variant="outline-primary" value={'year'} >Year to Date</ToggleButton>
-                        {this.months.map( (month) => ( <ToggleButton key={month} variant="outline-primary" value={month} >{month}</ToggleButton>))  }
-                    </ToggleButtonGroup>
+                    <PeriodSelector onChange={this.onChoosePeriod} />
 
                     <Table striped bordered hover>
                         <TableHeader headings={["Summary Profit/Loss for " + this.data.period] } />
@@ -175,7 +158,7 @@ class ReportView extends React.Component {
                     </Table>
 
                      <Table striped bordered hover>
-                              <TableHeader headings={["Summary Products disposition year to date"] } />
+                              <TableHeader headings={["Summary Products disposition for " + this.data.period] } />
                               <tbody><tr><td>
                                  {this.productDispositionSummary() }
                             </td></tr></tbody>

@@ -38,7 +38,9 @@ export class NuskinNavBar extends React.Component {
     
     handleSelect(selectedKey) {
         if (selectedKey == 1) NuskinOrderManager.showOrders();
-        else NuskinOrderManager.showReport();
+        else if (selectedKey == 2) NuskinOrderManager.showReport();
+        else if (selectedKey == 3) NuskinOrderManager.showExpenses();
+        else if (selectedKey == 4) NuskinOrderManager.showCommission();
     }
     
     close() {
