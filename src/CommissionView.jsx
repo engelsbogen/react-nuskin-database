@@ -22,11 +22,14 @@ class CommissionView extends React.Component {
     
     getData() {
         
+        
     }
     
     render() {
         
         return (<Form style={{margin: '10px'}}>
+                
+                
                 <PeriodSelector onChange={this.onChoosePeriod} />
                 
                 <Table striped bordered hover>

@@ -18,4 +18,19 @@ function TableHeader(props) {
 }
 
 
-export {TableHeader};
+function makeCell(o, index) {
+    
+    return <td key={index}>{o}</td>; 
+}
+
+function TableRow(props) {
+    
+    return ( <tr>
+              { props.cells.map((t,i) => makeCell(t, i)) }
+             </tr>
+           );
+    
+}
+
+
+export {TableHeader, TableRow };

@@ -5,6 +5,24 @@ import { Navbar, Nav, NavItem, NavDropdown, MenuItem, Form, Button,
 import NuskinOrderManager from 'NuskinOrderManager';
 import axios from "axios";
 
+
+class SelectedYear {
+    
+    static selectedYear = new Date().getFullYear();
+    
+    static setYear(year) {
+        // Add the X-TenantID to all requests made through the axios library
+        axios.defaults.headers.common['X-TenantID'] = 'nuskin' + year;
+        SelectedYear.selectedYear = year;
+    }
+    
+    static getYear() {
+        return SelectedYear.selectedYear;
+    }
+    
+}
+
+
 export class NuskinNavBar extends React.Component {
 
     constructor(props) {
@@ -14,7 +32,7 @@ export class NuskinNavBar extends React.Component {
         this.handleSelect = this.handleSelect.bind(this);
         this.close = this.close.bind(this);
         this.onSetYear = this.onSetYear.bind(this);
-        this.setYear = this.setYear.bind(this);
+        //this.setYear = this.setYear.bind(this);
         
         // Data members
         this.state = { view: {showConnectionDialog: false,
@@ -24,14 +42,14 @@ export class NuskinNavBar extends React.Component {
         // Note that the back-end must have a data source (database) configured for each year
         
         this.years = [];
-        var currentYear = new Date().getFullYear();
-        for (var year=2018; year <= currentYear; year++ ) {
+        this.year = new Date().getFullYear();
+        for (var year=2018; year <= this.year; year++ ) {
             this.years.push(year);
         }
 
         // TODO - (maybe) save the last selected year in a Cookie
         // for now assume we want the current year's data
-        this.setYear(currentYear);
+        SelectedYear.setYear(this.year);
         
     }
     
@@ -47,17 +65,18 @@ export class NuskinNavBar extends React.Component {
     }
     
     onSetYear(year, event) {
-        this.setYear(year); 
+        this.year = year;
+        SelectedYear.setYear(year); 
         
         // Refresh the main Nuskin component
         NuskinOrderManager.refreshMainView();
     }
 
-    setYear(year) {
-        this.year = year;
-        // Add the X-TenantID to all requests made through the axios library
-        axios.defaults.headers.common['X-TenantID'] = 'nuskin' + year;
-    }
+//    setYear(year) {
+//        this.year = year;
+//        // Add the X-TenantID to all requests made through the axios library
+//        axios.defaults.headers.common['X-TenantID'] = 'nuskin' + year;
+//    }
 
     
     render() {
@@ -97,6 +116,6 @@ export class NuskinNavBar extends React.Component {
 }
 
 
-
+export { SelectedYear };
 export default NuskinNavBar;
       
