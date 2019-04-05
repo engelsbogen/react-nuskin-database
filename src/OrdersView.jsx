@@ -35,7 +35,10 @@ class OrdersView extends Component {
       this.doNextUpload = this.doNextUpload.bind(this);
       this.getTotal = this.getTotal.bind(this);
       this.makeOrderColumns = this.makeOrderColumns.bind(this);
-
+      this.onDeleteOrder = this.onDeleteOrder.bind(this);
+      this.handleDeleteResponse = this.handleDeleteReponse.bind(this);
+      this.handleDeleteError = this.handleDeleteError.bind(this);
+      this.doDeleteOrder = this.doDeleteOrder.bind(this);
       // Data members 
       this.selectedFile = null;
       this.nextUploadIndex  = 0;
@@ -91,6 +94,17 @@ class OrdersView extends Component {
                   // React-table cells are set to {white-space: nowrap}. To allow wrapping in one cell, unset this style
                   // For react we have to change to whiteSpace
                   style: { 'whiteSpace': 'unset'} },
+              { Header: 'Actions', 
+                      width: 150,
+                      Cell: props=>( 
+                              <span>
+                                 <Button onClick={()=> {this.onDeleteOrder(props.index)}}>Delete</Button>
+                              </span> 
+                            ),
+                      // React-table cells are set to {white-space: nowrap}. To allow wrapping in one cell, unset this style
+                      // For react we have to change to whiteSpace
+                      style: { 'whiteSpace': 'unset'} },
+
            ]
         }
         
@@ -194,6 +208,46 @@ class OrdersView extends Component {
           }  
       }
   }
+
+  
+  doDeleteOrder(index) {
+      
+      axios.delete("/deleteorder?orderNumber=" + this.state.data[index].orderNumber )
+      .then( (res) => this.handleDeleteResponse(res))
+      .catch( (res) => this.handleDeleteError(res));
+      
+  }
+  
+  onDeleteOrder(index) {
+      
+      // If the order has any products marked as anything other than "in stock", double-check 
+      // with the user before going ahead
+      var order = this.state.data[index];
+      
+      // Add an extra field in t
+      if (order.hasOnlyInStockItems == false) {
+          NuskinAlert.showConfirm("Order has items already assigned, continue?")
+          .then((res) => {
+              console.log("confirm result = " + res);
+              if (res == 0) {
+                  this.doDeleteOrder(index);
+              }
+           } );
+      }
+      else {
+          this.doDeleteOrder(index);
+      }
+      
+      
+  }
+
+  handleDeleteReponse(res) {
+      this.getData();
+  }
+  
+  handleDeleteError(response) {
+      NuskinAlert.showAlert("Error deleting order: " + response);
+  }
   
   onFileSelected(ev) {
       this.selectedFile = ev.target.files;
@@ -246,7 +300,7 @@ class OrdersView extends Component {
               <NewSKUs filename={ orderFilename } data={this.state.newSKUs} show={ this.state.showNewSKUs } onHide={this.onHideDialog} /> 
               <form style={{margin: '10px'}}>
               <div className="file btn btn-primary"><input type="file" multiple onChange={this.onFileSelected} /></div>
-              <Button onClick={() => {this.onAddOrder(true);} }>Upload Orders</Button>
+              <Button onClick={() => {this.onAddOrder(false);} }>Upload Orders</Button>
            
               </form>         
               <ReactTable data={data} 
