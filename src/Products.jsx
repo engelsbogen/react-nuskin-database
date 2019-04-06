@@ -31,9 +31,17 @@ class Products extends Component {
              { Header: 'Item',             accessor: 'id',           style: { textAlign: "center" }  }, 
              { Header: 'SKU',              accessor: 'sku',          style: { textAlign: "center" }  }, 
              { Header: 'Description',      accessor: 'description',  style: { textAlign: "left" }  }, 
-             { Header: 'Cost',             accessor: 'costPrice',    style: { textAlign: "right" }, Cell: cellInfo => cadFormat.format(cellInfo.value) }, 
-             { Header: 'Tax',              accessor: 'tax',          style: { textAlign: "right" }, Cell: cellInfo => cadFormat.format(cellInfo.value) }, 
-             { Header: 'Shipping',         accessor: 'shipping',     style: { textAlign: "right" }, Cell: cellInfo => cadFormat.format(cellInfo.value) },
+             { Header: 'Cost (inc. tax and shipping)',
+                 id : 'total',
+                 accessor: d => d.costPrice + d.tax + d.shipping,   
+                 style: { textAlign: "right" }, 
+                 Cell: cellInfo => cadFormat.format(cellInfo.value) 
+             }, 
+
+             
+             
+             //{ Header: 'Tax',              accessor: 'tax',          style: { textAlign: "right" }, Cell: cellInfo => cadFormat.format(cellInfo.value) }, 
+             //{ Header: 'Shipping',         accessor: 'shipping',     style: { textAlign: "right" }, Cell: cellInfo => cadFormat.format(cellInfo.value) },
            ]
         },
         { Header: "Destination", 
@@ -62,7 +70,7 @@ class Products extends Component {
                accessor: 'sellingPrice', 
                       Cell: (props) => (
                               <div>$
-                              <CurrencyInput value={props.value != null ? props.value:undefined} onChangeEvent={ (ev)=> {this.onSellingPriceChange(ev, props.index)}}>
+                              <CurrencyInput style={{display: "inline"}} className="form-control" value={props.value != null ? props.value:undefined} onChangeEvent={ (ev)=> {this.onSellingPriceChange(ev, props.index)}}>
                               </CurrencyInput>
                               </div>
                               )
@@ -254,6 +262,23 @@ class Products extends Component {
       return retval;
   }
   
+  
+  subComponent(rowInfo) {
+      if (rowInfo && rowInfo.row && rowInfo.row.id) { 
+           return (
+               <div style={{ padding: "20px" }}>
+                   <span><b>Cost:</b> ${rowInfo.original.costPrice}  </span>
+                   <span><b>Tax:</b> ${rowInfo.original.tax}  </span>
+                   <span><b>Shipping:</b> ${rowInfo.original.shipping}  </span>
+              </div>);
+      }
+      else {
+          return ({});
+      }
+       
+   }
+
+  
   render() {
 
       const data = this.state.data ? this.state.data : undefined;
@@ -272,7 +297,14 @@ class Products extends Component {
                   <Button onClick={this.onSaveChanges}>Save changes</Button>
                   <Button onClick={this.onDiscardChanges}>Discard changes</Button>
               </form>         
-              <ReactTable minRows="1" data={data} columns={this.productColumns} getTrProps={this.getTrProps} defaultPageSize={20} className="-striped -highlight" />
+              <ReactTable 
+                   minRows="1" 
+                   data={data} 
+                   columns={this.productColumns} 
+                   getTrProps={this.getTrProps} 
+                   defaultPageSize={20} className="-striped -highlight"
+                   SubComponent = { row =>  {  return this.subComponent(row); } }
+                  />
               </div>
     );
   }
