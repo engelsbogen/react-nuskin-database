@@ -112,8 +112,15 @@ class ReportView extends React.Component {
                            quantity = { this.itemText(this.data.soldItemCount + this.data.demoItemCount + this.data.sampleItemCount) }
                            amount={this.getCostOfGoodsSold() } />
                  <TableRow style = { {fontWeight : 'bold'} }
-                           desc="Profit/(Loss)"      
+                           desc="Profit/(Loss) on goods sold"      
                            amount={this.getProfit() } />
+                <TableRow desc="Commission for period" 
+                          amount={this.data.commission } />
+                <TableRow desc="Expenses for period" 
+                          amount={this.data.expenses } />
+                <TableRow style = { {fontWeight : 'bold'} }
+                          desc="Net Profit/(Loss)"      
+                          amount={this.getProfit() + this.data.commission - this.data.expenses } />
                  </tbody>
              </Table> 
          );
