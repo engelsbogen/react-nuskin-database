@@ -51,8 +51,7 @@ class ExpensesView extends React.Component {
         this.onEditExpense = this.onEditExpense.bind(this);
         
         this.period = 'year';
-        this.data = { period: 'year to date'};
-        
+     
                 
         // initDateRange
         var selectedYear = SelectedYear.getYear();
@@ -143,7 +142,6 @@ class ExpensesView extends React.Component {
         if (this.expense.amount == 0) {
             this.setState({amountValid : false});
         }
-        console.log(this.expense.amount);
     }
     
     onAddExpense(ev) {
@@ -188,9 +186,7 @@ class ExpensesView extends React.Component {
         this.getData();
     }
     handleDeleteError(response) {
-        
         NuskinAlert.showAlert("Error deleting expense: " + response);
-        
     }
     
     handleSaveResponse(response) {
