@@ -90,6 +90,20 @@ class OrdersView extends Component {
                   style: { textAlign: "right" }, 
                   Cell: props => cadFormat.format(props.value) },
               { Header: 'Item Summary', accessor: 'itemSummary',
+                  Cell: props=>(
+                      <div>
+                      <p>
+                      <strong>In stock:&nbsp;</strong>
+                      { this.state.data[props.index].itemSummary}
+                      </p>
+                      <p>
+                      <strong>Disposed:&nbsp;</strong>
+                      { this.state.data[props.index].disposedItemSummary}
+                      </p>
+                      </div>
+                  
+                  ),
+                  
                   Aggregated: ()=> { return  (<span/>); },  // Empty in aggregated row
                   // React-table cells are set to {white-space: nowrap}. To allow wrapping in one cell, unset this style
                   // For react we have to change to whiteSpace
@@ -311,6 +325,7 @@ class OrdersView extends Component {
                           className="-striped -highlight" 
                           getTrProps={this.getTrProps} 
                           SubComponent = { row =>  {  return this.subComponent(row); } }
+                          defaultSorted={[ {id: 'month',  desc: false }]}    
                   />
            </>
           );
