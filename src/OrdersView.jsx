@@ -11,7 +11,6 @@ import NewSKUs from "NewSKUs";
 import NuskinAlert from "NuskinAlert";
 import _ from "lodash";
 
-
 var lodash = _;
 
 const cadFormat = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' })
@@ -288,7 +287,14 @@ class OrdersView extends Component {
   subComponent(rowInfo) {
      if (rowInfo && rowInfo.row && rowInfo.row.orderNumber) { 
           return (
-              <div style={{ padding: "20px" }}>
+              <div style={{  borderStyle: "solid",
+                             borderWidth: "2px",
+                             borderColor: "dodgerblue",
+                             borderRadius: "30px",
+                             backgroundColor: "lightcyan",
+                             marginLeft: "20px",
+                             marginRight: "20px",
+                             padding: "20px" }}>
                   <Products orderDetails={rowInfo.original} /> 
              </div>);
      }
