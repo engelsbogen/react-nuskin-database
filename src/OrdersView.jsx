@@ -27,6 +27,7 @@ class OrdersView extends Component {
       this.getTrProps = this.getTrProps.bind(this);
       this.subComponent = this.subComponent.bind(this);
       this.showResponse = this.showResponse.bind(this);
+      this.showTextUploadResponse = this.showTextUploadResponse.bind(this);
       this.onHideDialog = this.onHideDialog.bind(this);
       this.handleShow = this.handleShow.bind(this);
       this.handleUploadError = this.handleUploadError.bind(this);
@@ -38,6 +39,7 @@ class OrdersView extends Component {
       this.handleDeleteResponse = this.handleDeleteReponse.bind(this);
       this.handleDeleteError = this.handleDeleteError.bind(this);
       this.doDeleteOrder = this.doDeleteOrder.bind(this);
+      this.handleOrderTextChange = this.handleOrderTextChange.bind(this);
       // Data members 
       this.selectedFile = null;
       this.nextUploadIndex  = 0;
@@ -45,7 +47,9 @@ class OrdersView extends Component {
       this.state =  { data: null,
                       columns : this.orderColumns,
                       newSKUs: null,
-                      showNewSKUs : false };
+                      showNewSKUs : false, 
+                      orderText: ""};
+      this.orderText = null;
       
   }
   
@@ -99,6 +103,8 @@ class OrdersView extends Component {
                       <strong>Disposed:&nbsp;</strong>
                       { this.state.data[props.index].disposedItemSummary}
                       </p>
+                      <p><u>Customers</u></p>
+                      {this.state.data[props.index].soldItemsPerCustomer.map( (text, index) => ( <p key={index} ><strong>{text.name}:</strong> {text.desc}</p>))  }
                       </div>
                   
                   ),
@@ -169,7 +175,7 @@ class OrdersView extends Component {
           }
           else {
               this.setState ( { newSKUs: [], showNewSKUs: false } );
-              this.refresh();
+              this.getData();
           }
       }
       else {
@@ -177,6 +183,24 @@ class OrdersView extends Component {
       }
       
   }
+
+  showTextUploadResponse(res) {
+      var showDialog = res.data && res.data.unknownItems.length > 0;
+         
+      // If the were no problems, refresh the table
+      if (!showDialog) {
+          
+          NuskinAlert.showAlert("Order text uploaded successfully");
+
+          this.setState ( { newSKUs: [], showNewSKUs: false, orderText: "" } );
+          this.getData();
+      }
+      else {
+          this.setState( { newSKUs: res.data.unknownItems, showNewSKUs: true } );
+      }
+      
+  }
+
   
   onHideDialog(skusUpdated) {
       
@@ -210,6 +234,11 @@ class OrdersView extends Component {
       
   }
   
+  handleOrderTextChange(event) {
+      this.setState( { orderText: event.target.value} );
+  }
+  
+  
   onAddOrder(askConfirmation) {
       
       if (this.selectedFile != null) {
@@ -220,6 +249,23 @@ class OrdersView extends Component {
               this.doNextUpload();
           }  
       }
+      else {
+          if (this.state.orderText != null)
+          {
+              // Upload text 
+              axios.post("/ordertextupload",
+                         this.state.orderText, 
+                         {headers: {"Content-Type": "text/plain"}} )
+              .then(res => { 
+                  this.showTextUploadResponse(res); 
+                  // TODO If success then delete text from text box and member variable    
+                  
+              })
+              .catch( err=> { this.handleUploadError(err); });
+
+          }
+      }
+      
   }
 
   
@@ -320,6 +366,9 @@ class OrdersView extends Component {
               <NewSKUs filename={ orderFilename } data={this.state.newSKUs} show={ this.state.showNewSKUs } onHide={this.onHideDialog} /> 
               <form style={{margin: '10px'}}>
               <div className="file btn btn-primary"><input type="file" multiple onChange={this.onFileSelected} /></div>
+              <div>
+                <textarea onChange={this.handleOrderTextChange} value={this.state.orderText} ></textarea>
+              </div>
               <Button onClick={() => {this.onAddOrder(false);} }>Upload Orders</Button>
            
               </form>         
