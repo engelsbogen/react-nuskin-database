@@ -26,22 +26,28 @@ class OrdersView extends Component {
       this.onFileSelected = this.onFileSelected.bind(this);
       this.getTrProps = this.getTrProps.bind(this);
       this.subComponent = this.subComponent.bind(this);
-      this.showResponse = this.showResponse.bind(this);
-      this.showTextUploadResponse = this.showTextUploadResponse.bind(this);
       this.onHideDialog = this.onHideDialog.bind(this);
       this.handleShow = this.handleShow.bind(this);
-      this.handleUploadError = this.handleUploadError.bind(this);
       this.getData = this.getData.bind(this);
-      this.doNextUpload = this.doNextUpload.bind(this);
       this.getTotal = this.getTotal.bind(this);
       this.makeOrderColumns = this.makeOrderColumns.bind(this);
+
+      this.doNextUpload = this.doNextUpload.bind(this);
+      this.handleFileUploadResponse = this.handleFileUploadResponse.bind(this);
+      this.handleUploadError = this.handleUploadError.bind(this);
+
       this.onDeleteOrder = this.onDeleteOrder.bind(this);
       this.handleDeleteResponse = this.handleDeleteReponse.bind(this);
       this.handleDeleteError = this.handleDeleteError.bind(this);
       this.doDeleteOrder = this.doDeleteOrder.bind(this);
+
       this.handleOrderTextChange = this.handleOrderTextChange.bind(this);
+      this.doTextUpload = this.doTextUpload.bind(this);
+      this.handleTextUploadResponse = this.handleTextUploadResponse.bind(this);
+      
       // Data members 
       this.selectedFile = null;
+      this.textUpload = false;
       this.nextUploadIndex  = 0;
       this.makeOrderColumns();
       this.state =  { data: null,
@@ -161,11 +167,11 @@ class OrdersView extends Component {
       }
   }
   
-  showResponse(res) {
-      var showDialog = res.data && res.data.unknownItems.length > 0;
+  handleFileUploadResponse(res) {
+      var itemsUnknown = res.data && res.data.unknownItems.length > 0;
          
-      // If the were no problems, refresh the table
-      if (!showDialog) {
+      // If the were no problems, do the next upload or refresh the table
+      if (!itemsUnknown) {
           
           NuskinAlert.showAlert("Order file " + this.selectedFile[this.nextUploadIndex].name + " uploaded successfully");
 
@@ -184,16 +190,18 @@ class OrdersView extends Component {
       
   }
 
-  showTextUploadResponse(res) {
-      var showDialog = res.data && res.data.unknownItems.length > 0;
+  handleTextUploadResponse(res) {
+      var itemsUnknown = res.data && res.data.unknownItems.length > 0;
          
       // If the were no problems, refresh the table
-      if (!showDialog) {
+      if (!itemsUnknown) {
           
           NuskinAlert.showAlert("Order text uploaded successfully");
 
+          this.textUpload = false;
           this.setState ( { newSKUs: [], showNewSKUs: false, orderText: "" } );
           this.getData();
+          
       }
       else {
           this.setState( { newSKUs: res.data.unknownItems, showNewSKUs: true } );
@@ -208,7 +216,12 @@ class OrdersView extends Component {
       
       if (skusUpdated) {
           // Retry sending the order
-          this.doNextUpload();
+          if (this.textUpload) {
+              this.doTextUpload();
+          }
+          else {
+              this.doNextUpload();
+          }
       }
       
   }
@@ -229,7 +242,7 @@ class OrdersView extends Component {
       formData.append('name', 'thefilename');
       formData.append('description', 'anupload');
       axios.post("/orderfileupload", formData) 
-          .then(res => { this.showResponse(res); })
+          .then(res => { this.handleFileUploadResponse(res); })
           .catch( err=> { this.handleUploadError(err); });
       
   }
@@ -239,31 +252,37 @@ class OrdersView extends Component {
   }
   
   
+  doTextUpload() {
+      
+      if (this.state.orderText != null)
+      {
+          this.textUpload = true;
+          // Upload text 
+          axios.post("/ordertextupload",
+                     this.state.orderText, 
+                     {headers: {"Content-Type": "text/plain"}} )
+          .then(res => { 
+              this.handleTextUploadResponse(res); 
+          })
+          .catch( err=> { this.textUpload=false;
+                          this.handleUploadError(err); });
+      }
+
+  }
+  
   onAddOrder(askConfirmation) {
       
       if (this.selectedFile != null) {
+          // Order printed to PDF file. No longer works as Nuskin changed the way
+          // they print. 
           if ( !askConfirmation || window.confirm("Uploading orders ")) {
-
               this.nextUploadIndex = 0;
-              
               this.doNextUpload();
           }  
       }
       else {
-          if (this.state.orderText != null)
-          {
-              // Upload text 
-              axios.post("/ordertextupload",
-                         this.state.orderText, 
-                         {headers: {"Content-Type": "text/plain"}} )
-              .then(res => { 
-                  this.showTextUploadResponse(res); 
-                  // TODO If success then delete text from text box and member variable    
-                  
-              })
-              .catch( err=> { this.handleUploadError(err); });
-
-          }
+         // Upload order text cut and pasted into the text area
+         this.doTextUpload();
       }
       
   }
@@ -296,8 +315,6 @@ class OrdersView extends Component {
       else {
           this.doDeleteOrder(index);
       }
-      
-      
   }
 
   handleDeleteReponse(res) {
@@ -366,8 +383,8 @@ class OrdersView extends Component {
               <NewSKUs filename={ orderFilename } data={this.state.newSKUs} show={ this.state.showNewSKUs } onHide={this.onHideDialog} /> 
               <form style={{margin: '10px'}}>
               <div className="file btn btn-primary"><input type="file" multiple onChange={this.onFileSelected} /></div>
-              <div>
-                <textarea onChange={this.handleOrderTextChange} value={this.state.orderText} ></textarea>
+              <div style={{ width: 400}} >
+                <textarea  onChange={this.handleOrderTextChange} value={this.state.orderText} ></textarea>
               </div>
               <Button onClick={() => {this.onAddOrder(false);} }>Upload Orders</Button>
            
