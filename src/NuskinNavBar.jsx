@@ -3,6 +3,7 @@ import React from 'react';
 import { Navbar, Nav, NavItem, NavDropdown, MenuItem, Form, Button, 
         ToggleButton, ToggleButtonGroup, Modal  } from 'react-bootstrap';
 import NuskinOrderManager from 'NuskinOrderManager';
+import NuskinAlert from 'NuskinAlert';
 import axios from "axios";
 
 
@@ -32,7 +33,9 @@ export class NuskinNavBar extends React.Component {
         this.handleSelect = this.handleSelect.bind(this);
         this.close = this.close.bind(this);
         this.onSetYear = this.onSetYear.bind(this);
-        //this.setYear = this.setYear.bind(this);
+        this.onBackup = this.onBackup.bind(this);
+        this.handleBackupResponse = this.handleBackupResponse.bind(this);
+        this.handleBackupError = this.handleBackupError.bind(this);
         
         // Data members
         this.state = { view: {showConnectionDialog: false,
@@ -72,11 +75,23 @@ export class NuskinNavBar extends React.Component {
         NuskinOrderManager.refreshMainView();
     }
 
-//    setYear(year) {
-//        this.year = year;
-//        // Add the X-TenantID to all requests made through the axios library
-//        axios.defaults.headers.common['X-TenantID'] = 'nuskin' + year;
-//    }
+    handleBackupResponse(res) {
+        NuskinAlert.showConfirm("Database backup completed");
+    }
+    handleBackupError(err) {
+        NuskinAlert.showAlert(err.response.data.message);
+    }
+    
+    onBackup() {
+        axios.post("/backup")
+        .then(res => { 
+            this.handleBackupResponse(res); 
+        })
+        .catch( err=> { this.handleBackupError(err); });
+
+        
+    }
+
 
     
     render() {
@@ -106,6 +121,8 @@ export class NuskinNavBar extends React.Component {
                    <ToggleButtonGroup type="radio" name="year" defaultValue={ this.year }  onChange={this.onSetYear} > 
                      {this.years.map( (year) => ( <ToggleButton key={year} variant="outline-primary" value={year} >{year}</ToggleButton>))  }
                    </ToggleButtonGroup>
+                     &nbsp;
+                     <Button  variant="outline-primary" onClick={this.onBackup} >Backup</Button>
                 </Nav>
                 </Navbar.Collapse>
             </Navbar>
