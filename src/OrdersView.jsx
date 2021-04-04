@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
-import { Modal, Tab, Tabs, Form, FormGroup, FormControl, Control, ControlLabel, Checkbox, Button, ListGroup, ListGroupItem, InputGroup } from 'react-bootstrap'
+import { Button } from 'react-bootstrap'
 import ReactTable from "react-table";
 import 'react-table/react-table.css'
 import './Nuskin.css';
