@@ -76,7 +76,14 @@ export class NuskinNavBar extends React.Component {
     }
 
     handleBackupResponse(res) {
-        NuskinAlert.showConfirm("Database backup completed");
+        
+        if (res.data.id == 0) {
+        	NuskinAlert.showConfirm("Database backup completed");
+       	}
+       	else {
+        	NuskinAlert.showConfirm("Database backup failed");
+		}       	
+        	
     }
     handleBackupError(err) {
         NuskinAlert.showAlert(err.response.data.message);
